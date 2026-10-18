@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Riding" />
+<meta name="theme-color" content="#E9DFCB" />
+<title>Riding Lessons</title>
+
+<!-- ================================================================
+     CONFIG  —  the only part you need to edit
+     ----------------------------------------------------------------
+     Leave both blank to run on this-device-only storage.
+     Fill both in to sync between your phone and Lilly's.
+     ================================================================ -->
+<script>
+  window.APP_CONFIG = {
+    SUPABASE_URL: "https://issetpfjihreculumwfe.supabase.co",
+    SUPABASE_ANON_KEY: "sb_publishable_UllNs6irBCtRGP2YWhkqZg_n1uANBRY",
+    RIDER_NAME: "Grace"
+  };
+</script>
+
+<style>
+:root{
+  --oat:#E9DFCB; --paper:#F6EFE0; --leather:#3E2717; --tan:#B08356;
+  --brass:#8E6F27; --paddock:#2C4632; --barn:#8C3A2B; --ink:#241811; --muted:#7A6650;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:
+    repeating-linear-gradient(0deg, rgba(62,39,23,.035) 0 1px, transparent 1px 26px),
+    var(--oat);
+  background-attachment:fixed;
+}
+.wrap{
+  min-height:100vh; color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  padding:max(20px, env(safe-area-inset-top)) 16px 56px;
+  max-width:720px; margin:0 auto; -webkit-text-size-adjust:100%;
+}
+.loading{padding:80px 0;text-align:center;color:var(--muted);font-family:Georgia,serif;font-style:italic}
+
+.hdr{text-align:center;margin-bottom:22px}
+.hdr-rule{height:3px;background:var(--leather);margin-bottom:14px;border-radius:2px}
+.eyebrow{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass);margin:0 0 4px}
+.eyebrow.tan{color:var(--tan)}
+.title{font-family:Georgia,"Iowan Old Style",serif;font-weight:700;font-size:40px;line-height:1;margin:0;letter-spacing:-.02em;color:var(--leather)}
+.sub{font-size:12px;color:var(--muted);margin:8px 0 0}
+
+.alert{background:#F6E2DD;border-left:4px solid var(--barn);color:#5E241A;padding:12px 14px;border-radius:6px;font-size:13px;margin-bottom:16px;line-height:1.5}
+.notice{background:#F2EAD6;border-left:4px solid var(--brass);color:#5B4A1E;padding:12px 14px;border-radius:6px;font-size:13px;margin-bottom:16px;line-height:1.5}
+
+.punchcard{background:var(--paper);border:2px solid var(--leather);border-radius:10px;padding:18px 16px 16px;margin-bottom:16px;box-shadow:0 2px 0 var(--leather)}
+.punch-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.punch-label{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass)}
+.saving{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--muted);letter-spacing:.1em}
+.punch-grid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+.hole{width:17px;height:17px;border-radius:50%;border:1.5px solid var(--tan);background:transparent;animation:pop .34s ease-out both}
+.hole.punched{background:var(--leather);border-color:var(--leather);box-shadow:inset 0 1px 2px rgba(0,0,0,.5)}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.hole{animation:none}}
+.punch-foot{display:flex;align-items:baseline;gap:10px;border-top:1px solid var(--tan);padding-top:12px}
+.bignum{font-family:Georgia,serif;font-size:46px;font-weight:700;line-height:1;color:var(--paddock)}
+.ofnum{font-size:12px;color:var(--muted)}
+.lowbar{margin:12px 0 0;background:var(--barn);color:#FDF3EF;padding:9px 12px;border-radius:6px;font-size:13px;font-weight:600}
+
+.daily{background:var(--leather);color:#F3E8D6;border-radius:10px;padding:16px;margin-bottom:16px}
+.breedrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.horse-svg{width:130px;height:104px;flex:none}
+.breedname{font-family:Georgia,serif;font-size:22px;margin:0;line-height:1.1}
+.breedorigin{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tan);margin:4px 0 6px}
+.breednote{font-size:13px;line-height:1.5;margin:0;opacity:.92}
+.fact{font-family:Georgia,serif;font-size:17px;line-height:1.5;margin:6px 0 0}
+
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--tan);border:1px solid var(--tan);border-radius:8px;overflow:hidden;margin-bottom:18px}
+.strip>div{background:var(--paper);padding:11px 10px;display:flex;flex-direction:column;gap:3px}
+.strip-k{font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.strip-v{font-family:Georgia,serif;font-size:19px;font-weight:700;color:var(--leather)}
+
+.tabs{display:flex;gap:6px;margin-bottom:16px}
+.tab{flex:1;padding:11px 8px;border:1.5px solid var(--tan);background:transparent;border-radius:7px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;min-height:44px;font-family:inherit}
+.tab.on{background:var(--leather);border-color:var(--leather);color:var(--paper)}
+
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.btn{padding:12px 15px;border-radius:7px;border:1.5px solid var(--leather);background:var(--paper);color:var(--leather);font-size:14px;font-weight:600;cursor:pointer;min-height:46px;font-family:inherit}
+.btn.primary{background:var(--paddock);border-color:var(--paddock);color:#F1EFE4}
+.btn.ghost{background:transparent;border-color:var(--tan);color:var(--muted)}
+.btn.danger{background:var(--barn);border-color:var(--barn);color:#FDF3EF}
+.btn.ghost.danger{background:transparent;border-color:var(--barn);color:var(--barn)}
+.btn.wide{width:100%}
+.btn:focus-visible,.tab:focus-visible,.mini:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--brass);outline-offset:2px}
+
+.form{background:var(--paper);border:1px solid var(--tan);border-radius:9px;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.form.inline{margin-top:12px;background:transparent;border-style:dashed}
+.form label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:var(--muted)}
+.form label.wide,.form .wide{grid-column:1 / -1}
+.form input,.form select,.editrow input{font-size:16px;padding:11px 10px;border:1.5px solid var(--tan);border-radius:6px;background:#FFFDF7;color:var(--ink);min-height:44px;font-family:inherit;width:100%}
+.hint{font-weight:400;font-size:11px;color:var(--muted);font-style:italic}
+.explain{font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 12px}
+
+.chart{background:var(--paper);border:1px solid var(--tan);border-radius:9px;padding:14px;margin-bottom:16px}
+.bars{display:flex;gap:12px;align-items:flex-end;margin-top:10px;overflow-x:auto;padding-bottom:4px}
+.bar{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:52px}
+.barfill{width:30px;background:var(--tan);border-radius:3px 3px 0 0}
+.barval{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--leather)}
+.barlab{font-size:11px;color:var(--muted)}
+
+.list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:9px}
+.row{background:var(--paper);border:1px solid var(--tan);border-radius:9px;padding:13px;border-left:5px solid var(--tan)}
+.row.ridden{border-left-color:var(--paddock)}
+.row.booked{border-left-color:var(--brass)}
+.row.canceled{border-left-color:var(--muted);opacity:.7}
+.row.buy{border-left-color:var(--leather)}
+.row-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.row-date{font-family:Georgia,serif;font-size:15px;font-weight:700;color:var(--leather)}
+.pill{font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:20px;border:1px solid var(--tan);color:var(--muted)}
+.pill.ridden{background:var(--paddock);border-color:var(--paddock);color:#EAF0E9}
+.pill.booked{background:var(--brass);border-color:var(--brass);color:#FBF5E4}
+.pill.iea{background:transparent;border-color:var(--leather);color:var(--leather)}
+.row.iea{border-left-color:var(--leather)}
+.form label.check{flex-direction:row;align-items:center;gap:10px;font-size:13px;color:var(--ink);min-height:44px}
+.form label.check input{width:22px;height:22px;min-height:0;accent-color:var(--paddock)}
+
+.lessons-tag{font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:700;background:var(--paddock);color:#EAF0E9;padding:3px 9px;border-radius:5px}
+.lessons-tag.neg{background:var(--barn)}
+.buyline{font-family:Georgia,serif;font-size:19px;font-weight:700;color:var(--leather);margin:7px 0 3px}
+.rownote{font-size:12px;color:var(--muted);margin:5px 0 0;line-height:1.45}
+.autonote{font-size:11px;color:var(--brass);margin:5px 0 0;font-style:italic;line-height:1.4}
+.editrow{display:grid;gap:8px;margin-top:10px}
+.rowacts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.mini{font-size:12px;padding:8px 10px;border-radius:5px;border:1px solid var(--tan);background:transparent;color:var(--muted);cursor:pointer;min-height:36px;font-weight:600;font-family:inherit}
+.mini.warn{color:var(--barn);border-color:var(--barn)}
+.empty{text-align:center;color:var(--muted);font-family:Georgia,serif;font-style:italic;padding:26px 0;font-size:14px}
+
+.foot{margin-top:26px;padding-top:18px;border-top:1px solid var(--tan);display:flex;flex-direction:column;gap:9px}
+.wipe{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--barn);font-weight:600}
+.footnote{font-size:11px;color:var(--muted);margin:6px 0 0;line-height:1.5;text-align:center}
+
+@media (max-width:480px){
+  .title{font-size:32px}
+  .form{grid-template-columns:1fr}
+  .horse-svg{width:110px;height:88px}
+  .strip-v{font-size:16px}
+}
+</style>
+</head>
+<body>
+<div id="root"><div class="wrap"><div class="loading">Opening the lesson card&hellip;</div></div></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef } = React;
+
+const KEY = "riding_lessons_v1";
+
+/* ============================================================
+   Storage adapter
+   Supabase if configured, otherwise this device only.
+   ============================================================ */
+const STORE = (() => {
+  const cfg = window.APP_CONFIG || {};
+  const url = (cfg.SUPABASE_URL || "").replace(/\/+$/, "");
+  const key = cfg.SUPABASE_ANON_KEY || "";
+
+  if (!url || !key) {
+    return {
+      mode: "local",
+      async load() {
+        const v = localStorage.getItem(KEY);
+        return v ? JSON.parse(v) : null;
+      },
+      async save(d) {
+        localStorage.setItem(KEY, JSON.stringify(d));
+      }
+    };
+  }
+
+  const base = url + "/rest/v1/app_state";
+
+  // Legacy anon keys are JWTs and want a Bearer header.
+  // Newer sb_publishable_ keys authenticate on the apikey header alone.
+  const headers = { apikey: key, "Content-Type": "application/json" };
+  if (key.startsWith("eyJ")) headers.Authorization = "Bearer " + key;
+
+  const explain = async (r, verb) => {
+    let detail = "";
+    try { const j = await r.json(); detail = j.message || j.hint || ""; } catch (e) {}
+    if (r.status === 401 || r.status === 403)
+      return verb + " refused (" + r.status + "). The key is wrong, or the row policies do not match. " + detail;
+    if (r.status === 404)
+      return verb + " hit a missing table (404). Check the project URL and that app_state exists. " + detail;
+    return verb + " failed (" + r.status + "). " + detail;
+  };
+
+  return {
+    mode: "supabase",
+    async load() {
+      let r;
+      try {
+        r = await fetch(base + "?id=eq." + KEY + "&select=data", { headers });
+      } catch (e) {
+        throw new Error("Could not reach " + url + ". The project may be paused, the URL may be wrong, or this device is offline.");
+      }
+      if (!r.ok) throw new Error(await explain(r, "Load"));
+      const rows = await r.json();
+      return rows.length ? rows[0].data : null;
+    },
+    async save(d) {
+      let r;
+      try {
+        r = await fetch(base, {
+          method: "POST",
+          headers: Object.assign({}, headers, {
+            Prefer: "resolution=merge-duplicates,return=minimal"
+          }),
+          body: JSON.stringify({ id: KEY, data: d, updated_at: new Date().toISOString() })
+        });
+      } catch (e) {
+        throw new Error("Could not reach " + url + " to save. Check the connection.");
+      }
+      if (!r.ok) throw new Error(await explain(r, "Save"));
+    }
+  };
+})();
+
+/* ============================================================
+   Seed data, transcribed from the Notes entry
+   ============================================================ */
+const uid = () => Math.random().toString(36).slice(2, 10);
+
+const SEED = {
+  riderName: (window.APP_CONFIG && window.APP_CONFIG.RIDER_NAME) || "Grace",
+  purchases: [
+    { id:"p_open", date:"2026-05-07", lessons:18, amount:"", perLesson:"", payType:"unknown", cardName:"", checkNumber:"", note:"Balance carried in before the May 7 purchase. Cost unknown." },
+    { id:"p_may7", date:"2026-05-07", lessons:24, amount:"", perLesson:"", payType:"unknown", cardName:"", checkNumber:"", note:"" },
+    { id:"p_jun10", date:"2026-06-10", lessons:12, amount:"", perLesson:"", payType:"unknown", cardName:"", checkNumber:"", note:"" }
+  ],
+  rides: [
+    { id:"r1", date:"2026-05-11", time:"", status:"ridden", note:"" },
+    { id:"r2", date:"2026-05-18", time:"", status:"ridden", note:"" },
+    { id:"r3", date:"2026-05-25", time:"", status:"canceled", note:"Memorial Day, skipped" },
+    { id:"r4", date:"2026-06-01", time:"", status:"ridden", note:"" },
+    { id:"r5", date:"2026-06-08", time:"", status:"ridden", note:"" },
+    { id:"r6", date:"2026-06-17", time:"", status:"ridden", note:"Rescheduled from June 15" },
+    { id:"r7", date:"2026-06-23", time:"13:00", status:"ridden", note:"After camp" },
+    { id:"r8", date:"2026-06-28", time:"11:00", status:"ridden", note:"" },
+    { id:"r9", date:"2026-06-29", time:"17:30", status:"ridden", note:"" },
+    { id:"r10", date:"2026-07-06", time:"17:30", status:"ridden", note:"" }
+  ],
+  adjustments: [
+    { id:"a1", date:"2026-06-10", amount:-1, note:"Reconciles to the barn count in Notes. Verify before trusting." }
+  ]
+};
+
+/* ============================================================
+   Helpers
+   ============================================================ */
+const todayISO = () => {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+};
+const fmtDate = (iso) => {
+  if (!iso) return "No date";
+  const p = iso.split("-").map(Number);
+  return new Date(p[0], p[1]-1, p[2]).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"});
+};
+const fmtTime = (t) => {
+  if (!t) return "";
+  const p = t.split(":").map(Number);
+  const ap = p[0] >= 12 ? "pm" : "am";
+  const hr = p[0] % 12 === 0 ? 12 : p[0] % 12;
+  return hr + ":" + String(p[1]).padStart(2,"0") + ap;
+};
+const money = (n) =>
+  n === "" || n === null || n === undefined || isNaN(Number(n))
+    ? "\u2014"
+    : Number(n).toLocaleString("en-US",{style:"currency",currency:"USD"});
+const dayIndex = () => {
+  const d = new Date();
+  return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+};
+
+/* ============================================================
+   Horse of the day
+   ============================================================ */
+const FACTS = [
+  "A horse's hooves grow about a quarter inch every month, which is why the farrier keeps showing up.",
+  "Horses can sleep standing up. A set of ligaments called the stay apparatus locks the legs so no muscle effort is needed.",
+  "A horse has roughly 205 bones. Unlike almost every other mammal, none of them is a collarbone.",
+  "Horses cannot vomit. The muscle where the esophagus meets the stomach only opens one way.",
+  "The eye of a horse is the largest of any land mammal, and gives it nearly 350 degrees of vision.",
+  "Horses are measured in hands. One hand is four inches, measured to the withers, not the head.",
+  "A horse's teeth take up more room in its skull than its brain does.",
+  "Foals can usually stand and walk within an hour or two of being born.",
+  "Horses recognize human faces and remember specific people for years.",
+  "A relaxed horse rests one hind hoof on its toe. It is the equine version of leaning on a doorframe.",
+  "The fastest recorded racehorse speed is about 44 miles per hour, held by a Quarter Horse over a short sprint.",
+  "Horses have no muscle below the knee and hock. The legs run on tendons, like cables.",
+  "A horse flicks its ears toward whatever it is paying attention to. Two ears pointed at you is a compliment.",
+  "Horses drink somewhere between five and ten gallons of water a day.",
+  "The chestnut, that hard patch on the inside of each leg, is unique to each horse like a fingerprint.",
+  "Horses sweat, which is unusual for mammals. Most animals pant instead.",
+  "A horse's gallop has a moment of suspension where all four feet are off the ground at once.",
+  "Ponies are not baby horses. A pony is any horse under 14.2 hands as a full-grown adult.",
+  "Horses are prey animals, which is why the reaction to a plastic bag is out of proportion to the plastic bag.",
+  "The average horse heart weighs about nine pounds and beats around 40 times a minute at rest.",
+  "Horses can see almost all the way around themselves, but have a blind spot directly in front of the nose.",
+  "A horse's whiskers are sensory tools that help it judge distance to things it cannot see up close.",
+  "Horses have been domesticated for roughly 6,000 years, first on the steppes of Central Asia.",
+  "Horses yawn, but usually out of tension release rather than tiredness."
+];
+
+const BREEDS = [
+  { name:"Appaloosa", origin:"Nez Perce, Pacific Northwest", note:"Known for the spotted blanket over the hindquarters and striped hooves.", body:"#8A6A4F", mane:"#3D2A1C", pattern:"spots", build:"stock" },
+  { name:"American Paint", origin:"United States", note:"Stock horse build with large blocks of white against a solid coat.", body:"#6B4327", mane:"#3A2416", pattern:"patches", build:"stock" },
+  { name:"Clydesdale", origin:"Lanarkshire, Scotland", note:"A draft horse with heavy white feathering over the hooves.", body:"#5A3A22", mane:"#F2E7D2", pattern:"feather", build:"draft" },
+  { name:"Friesian", origin:"Friesland, Netherlands", note:"Always black, with a long wavy mane and a high knee action at the trot.", body:"#22201F", mane:"#100F0F", pattern:"none", build:"baroque" },
+  { name:"Haflinger", origin:"Tyrol, Austria", note:"Chestnut body with a flaxen mane and tail. Small, strong, unbothered.", body:"#B5793C", mane:"#F4E9D3", pattern:"none", build:"pony" },
+  { name:"Arabian", origin:"Arabian Peninsula", note:"Dished face, high tail carriage, and one fewer vertebra than most breeds.", body:"#9E7B5E", mane:"#2E2119", pattern:"none", build:"light" },
+  { name:"Shetland Pony", origin:"Shetland Isles, Scotland", note:"Under 42 inches, thick winter coat, and pound for pound the strongest horse there is.", body:"#4A3626", mane:"#241A12", pattern:"none", build:"pony" },
+  { name:"Thoroughbred", origin:"England", note:"Bred for racing. Long legs, deep chest, and a great deal of opinion.", body:"#6E3F26", mane:"#2B1810", pattern:"none", build:"light" },
+  { name:"Percheron", origin:"Perche, France", note:"A gray or black draft horse that can weigh over a ton.", body:"#9A9A9C", mane:"#5E5E60", pattern:"none", build:"draft" },
+  { name:"Connemara Pony", origin:"Connemara, Ireland", note:"Usually gray, famously sure-footed, and a strong jumper for its size.", body:"#B3AEA6", mane:"#6E6862", pattern:"dapple", build:"pony" },
+  { name:"Morgan", origin:"Vermont, United States", note:"One of the earliest American breeds. Compact, arched neck, willing to do anything.", body:"#5C3520", mane:"#241309", pattern:"none", build:"stock" },
+  { name:"Icelandic Horse", origin:"Iceland", note:"Has two extra gaits, the tolt and the flying pace. Once exported, never allowed back.", body:"#7C5334", mane:"#E8D9BE", pattern:"none", build:"pony" },
+  { name:"Andalusian", origin:"Iberian Peninsula", note:"Gray more often than not, with a thick mane and a floating, collected trot.", body:"#C6C2BA", mane:"#8C877F", pattern:"none", build:"baroque" },
+  { name:"Welsh Pony", origin:"Wales", note:"A common first pony. Bold, fast, and rather more clever than the child riding it.", body:"#8B5A2E", mane:"#3B2413", pattern:"none", build:"pony" }
+];
+
+function Horse({ breed }) {
+  const b = breed;
+  const shade = (hex, amt) => {
+    const n = parseInt(hex.slice(1),16);
+    const r = Math.max(0,Math.min(255,((n>>16)&255)+amt));
+    const g = Math.max(0,Math.min(255,((n>>8)&255)+amt));
+    const bl = Math.max(0,Math.min(255,(n&255)+amt));
+    return "#" + ((1<<24)+(r<<16)+(g<<8)+bl).toString(16).slice(1);
+  };
+  const dark = shade(b.body,-34);
+  const hoof = "#2B231C";
+  const build = {
+    pony:{s:.9,leg:46,barrel:30,y:14},
+    light:{s:1,leg:70,barrel:27,y:-4},
+    stock:{s:1,leg:58,barrel:33,y:2},
+    draft:{s:1.08,leg:58,barrel:38,y:0},
+    baroque:{s:1.02,leg:62,barrel:33,y:-1}
+  }[b.build];
+  const legTop = 96 + build.barrel * .55;
+  const legH = build.leg;
+  const Y = build.y;
+
+  const Leg = ({ x, far }) => (
+    <g>
+      <rect x={x} y={legTop} width={far?11:14} height={legH} rx={6} fill={far?dark:b.body} />
+      <rect x={x-1} y={legTop+legH-9} width={far?13:16} height={10} rx={3} fill={hoof} />
+      {b.pattern === "feather" &&
+        <ellipse cx={x+(far?5.5:7)} cy={legTop+legH-12} rx={far?10:12} ry={11} fill="#F4EDDD" opacity={far?.75:1} />}
+    </g>
+  );
+
+  return (
+    <svg viewBox="0 0 250 200" className="horse-svg" role="img" aria-label={b.name + " illustration"}>
+      <defs>
+        <clipPath id={"clip-" + b.name.replace(/\s/g,"")}>
+          <ellipse cx={132} cy={96+Y} rx={54} ry={build.barrel} />
+        </clipPath>
+      </defs>
+      <g transform={"translate(0 " + (-Y) + ") scale(" + build.s + ") translate(" + ((1-build.s)*60) + " 0)"}>
+        <Leg x={112} far />
+        <Leg x={174} far />
+        <path d={"M 178 "+(76+Y)+" C 206 "+(80+Y)+", 210 "+(118+Y)+", 196 "+(152+Y)+" C 192 "+(164+Y)+", 184 "+(168+Y)+", 178 "+(166+Y)+" C 192 "+(142+Y)+", 194 "+(106+Y)+", 172 "+(88+Y)+" Z"} fill={b.mane} />
+        <ellipse cx={132} cy={96+Y} rx={54} ry={build.barrel} fill={b.body} />
+        <circle cx={166} cy={94+Y} r={build.barrel+2} fill={b.body} />
+        <circle cx={100} cy={98+Y} r={build.barrel-3} fill={b.body} />
+        <g clipPath={"url(#clip-" + b.name.replace(/\s/g,"") + ")"}>
+          {b.pattern === "spots" && <g>
+            <ellipse cx={166} cy={90+Y} rx={34} ry={30} fill="#F0EAE0" />
+            <circle cx={158} cy={82+Y} r={5} fill={dark} />
+            <circle cx={176} cy={94+Y} r={4} fill={dark} />
+            <circle cx={166} cy={104+Y} r={5.5} fill={dark} />
+            <circle cx={182} cy={78+Y} r={3.5} fill={dark} />
+            <circle cx={150} cy={100+Y} r={3} fill={dark} />
+          </g>}
+          {b.pattern === "patches" && <g>
+            <ellipse cx={120} cy={110+Y} rx={30} ry={22} fill="#F5F0E6" />
+            <ellipse cx={168} cy={80+Y} rx={22} ry={18} fill="#F5F0E6" />
+          </g>}
+          {b.pattern === "dapple" && <g>
+            <circle cx={120} cy={88+Y} r={8} fill="#FFF" opacity={.22} />
+            <circle cx={146} cy={100+Y} r={7} fill="#FFF" opacity={.22} />
+            <circle cx={162} cy={84+Y} r={6} fill="#FFF" opacity={.22} />
+            <circle cx={134} cy={112+Y} r={6} fill="#FFF" opacity={.22} />
+          </g>}
+        </g>
+        <Leg x={92} />
+        <Leg x={154} />
+        <path d={"M 104 "+(76+Y)+" L 82 "+(34+Y)+" L 60 "+(32+Y)+" L 54 "+(52+Y)+" L 82 "+(100+Y)+" Z"} fill={b.body} />
+        <path d={b.name === "Arabian"
+          ? "M 64 "+(34+Y)+" L 40 "+(22+Y)+" C 26 "+(22+Y)+", 16 "+(30+Y)+", 18 "+(40+Y)+" C 20 "+(48+Y)+", 32 "+(50+Y)+", 40 "+(50+Y)+" L 60 "+(54+Y)+" Z"
+          : "M 64 "+(34+Y)+" L 36 "+(20+Y)+" L 20 "+(26+Y)+" L 16 "+(40+Y)+" L 30 "+(50+Y)+" L 60 "+(56+Y)+" Z"} fill={b.body} />
+        {b.pattern === "feather" &&
+          <path d={"M 30 "+(23+Y)+" L 20 "+(27+Y)+" L 17 "+(40+Y)+" L 27 "+(46+Y)+" Z"} fill="#F4EDDD" />}
+        <circle cx={38} cy={33+Y} r={3.2} fill="#1A1512" />
+        <ellipse cx={19} cy={35+Y} rx={3} ry={2.2} fill="#1A1512" opacity={.6} />
+        <path d={"M 60 "+(33+Y)+" L 64 "+(16+Y)+" L 72 "+(31+Y)+" Z"} fill={b.body} />
+        <path d={"M 70 "+(34+Y)+" L 76 "+(19+Y)+" L 82 "+(34+Y)+" Z"} fill={dark} />
+        <path d={"M 62 "+(20+Y)+" C 78 "+(34+Y)+", 96 "+(58+Y)+", 106 "+(84+Y)+" L 88 "+(88+Y)+" C 80 "+(62+Y)+", 68 "+(40+Y)+", 52 "+(28+Y)+" Z"} fill={b.mane} />
+        {(b.build === "baroque" || b.name === "Icelandic Horse") &&
+          <path d={"M 58 "+(24+Y)+" C 74 "+(40+Y)+", 86 "+(66+Y)+", 88 "+(94+Y)+" C 80 "+(78+Y)+", 68 "+(50+Y)+", 48 "+(32+Y)+" Z"} fill={b.mane} opacity={.85} />}
+      </g>
+    </svg>
+  );
+}
+
+/* ============================================================
+   App
+   ============================================================ */
+function App() {
+  const [data, setData] = useState(null);
+  const [loadErr, setLoadErr] = useState("");
+  const [saveErr, setSaveErr] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState("card");
+  const [confirmWipe, setConfirmWipe] = useState(false);
+  const first = useRef(true);
+  const dirty = useRef(false);
+
+  const pull = async (silent) => {
+    try {
+      const d = await STORE.load();
+      if (d) {
+        setData(d);
+      } else if (!silent) {
+        setData(SEED);
+      }
+      setLoadErr("");
+    } catch (e) {
+      if (!silent) {
+        setLoadErr(e.message || "Could not reach the data store.");
+        setData(SEED);
+      }
+    }
+  };
+
+  useEffect(() => { pull(false); }, []);
+
+  /* refresh when the tab comes back to the front, so both phones stay in step */
+  useEffect(() => {
+    if (STORE.mode !== "supabase") return;
+    const onVis = () => { if (!document.hidden && !dirty.current) pull(true); };
+    document.addEventListener("visibilitychange", onVis);
+    const t = setInterval(() => { if (!document.hidden && !dirty.current) pull(true); }, 45000);
+    return () => { document.removeEventListener("visibilitychange", onVis); clearInterval(t); };
+  }, []);
+
+  useEffect(() => {
+    if (!data) return;
+    if (first.current) { first.current = false; return; }
+    let alive = true;
+    dirty.current = true;
+    setSaving(true);
+    (async () => {
+      try {
+        await STORE.save(data);
+        if (alive) setSaveErr("");
+      } catch (e) {
+        if (alive) setSaveErr((e.message || "That change did not save.") + " Your edit is still on screen, so try again once it is fixed.");
+      } finally {
+        if (alive) { setSaving(false); dirty.current = false; }
+      }
+    })();
+    return () => { alive = false; };
+  }, [data]);
+
+  const patch = (fn) => setData((d) => fn(Object.assign({}, d)));
+  const today = todayISO();
+
+  const rides = useMemo(() => {
+    if (!data) return [];
+    return data.rides.map((r) => {
+      const auto = r.status === "booked" && r.date && r.date < today;
+      return Object.assign({}, r, { effective: auto ? "ridden" : r.status, auto });
+    }).sort((a,b) => {
+      if (!a.date) return -1;
+      if (!b.date) return 1;
+      return b.date.localeCompare(a.date);
+    });
+  }, [data, today]);
+
+  const stats = useMemo(() => {
+    if (!data) return null;
+    const bought = data.purchases.reduce((s,p) => s + Number(p.lessons||0), 0);
+    const adj = data.adjustments.reduce((s,a) => s + Number(a.amount||0), 0);
+    const used = rides.filter(r => r.effective === "ridden" && !r.iea).length;
+    const iea = rides.filter(r => r.effective === "ridden" && r.iea).length;
+    const booked = rides.filter(r => r.effective === "booked" && !r.iea).length;
+    const paid = data.purchases.reduce((s,p) => s + (p.amount === "" ? 0 : Number(p.amount)||0), 0);
+    const paidLessons = data.purchases.reduce((s,p) => p.amount === "" ? s : s + Number(p.lessons||0), 0);
+    return { bought, adj, used, iea, booked, paid, avg: paidLessons ? paid/paidLessons : null, remaining: bought + adj - used };
+  }, [data, rides]);
+
+  const spend = useMemo(() => {
+    if (!data) return [];
+    const m = {};
+    data.purchases.forEach(p => {
+      if (p.amount === "" || !p.date) return;
+      const k = p.date.slice(0,7);
+      m[k] = (m[k]||0) + Number(p.amount||0);
+    });
+    return Object.entries(m).sort((a,b) => a[0].localeCompare(b[0]));
+  }, [data]);
+
+  const daily = useMemo(() => {
+    const i = dayIndex();
+    return i % 2 === 0
+      ? { kind:"breed", item: BREEDS[Math.floor(i/2) % BREEDS.length] }
+      : { kind:"fact", item: FACTS[Math.floor(i/2) % FACTS.length] };
+  }, []);
+
+  const addRide = (r) => patch(d => Object.assign({}, d, { rides: [Object.assign({id:uid(),time:"",note:""}, r)].concat(d.rides) }));
+  const setRide = (id, c) => patch(d => Object.assign({}, d, { rides: d.rides.map(r => r.id === id ? Object.assign({}, r, c) : r) }));
+  const delRide = (id) => patch(d => Object.assign({}, d, { rides: d.rides.filter(r => r.id !== id) }));
+  const addPurchase = (p) => patch(d => Object.assign({}, d, { purchases: [Object.assign({id:uid()}, p)].concat(d.purchases) }));
+  const setPurchase = (id, c) => patch(d => Object.assign({}, d, { purchases: d.purchases.map(p => p.id === id ? Object.assign({}, p, c) : p) }));
+  const delPurchase = (id) => patch(d => Object.assign({}, d, { purchases: d.purchases.filter(p => p.id !== id) }));
+  const addAdj = (a) => patch(d => Object.assign({}, d, { adjustments: [Object.assign({id:uid()}, a)].concat(d.adjustments) }));
+  const delAdj = (id) => patch(d => Object.assign({}, d, { adjustments: d.adjustments.filter(a => a.id !== id) }));
+
+  const exportCSV = () => {
+    const rows = [["Type","Date","Time","Status/Payment","Lessons","Amount","Per lesson","Note"]];
+    data.purchases.forEach(p => rows.push(["Purchase",p.date,"",
+      p.payType==="card" ? "Card: "+p.cardName : p.payType==="check" ? "Check "+p.checkNumber : "Not recorded",
+      p.lessons,p.amount,p.perLesson,p.note]));
+    rides.forEach(r => rows.push(["Lesson", r.date||"No date", r.time, r.effective+(r.iea?" (IEA, not counted)":"")+(r.auto?" (auto)":""),"","","",r.note]));
+    data.adjustments.forEach(a => rows.push(["Adjustment",a.date,"","",a.amount,"","",a.note]));
+    rows.push([]);
+    rows.push(["Lessons bought",stats.bought]);
+    rows.push(["Adjustments",stats.adj]);
+    rows.push(["Lessons used",stats.used]);
+    rows.push(["IEA lessons (not counted)",stats.iea]);
+    rows.push(["Lessons left",stats.remaining]);
+    rows.push(["Total paid",stats.paid]);
+    const csv = rows.map(r => r.map(c => '"' + String(c==null?"":c).replace(/"/g,'""') + '"').join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+    const a = document.createElement("a");
+    a.href = url; a.download = "riding-lessons-" + today + ".csv"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  if (!data) return <div className="wrap"><div className="loading">Opening the lesson card&hellip;</div></div>;
+
+  const low = stats.remaining <= 3;
+
+  return (
+    <div className="wrap">
+      <header className="hdr">
+        <div className="hdr-rule" />
+        <p className="eyebrow">Lesson card</p>
+        <h1 className="title">{data.riderName}</h1>
+        <p className="sub">{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})}</p>
+      </header>
+
+      {STORE.mode === "local" &&
+        <div className="notice">
+          Saving to this device only. Entries made here will not show up on the other phone.
+          Add the Supabase URL and key at the top of index.html to sync.
+        </div>}
+      {loadErr && <div className="alert">{loadErr}</div>}
+      {saveErr && <div className="alert">{saveErr}</div>}
+
+      <section className="punchcard">
+        <div className="punch-head">
+          <span className="punch-label">Lessons left</span>
+          {saving && <span className="saving">saving</span>}
+        </div>
+        <div className="punch-grid" aria-hidden="true">
+          {Array.from({length: Math.max(stats.bought + stats.adj, 0)}).map((_,i) =>
+            <span key={i} className={i < stats.used ? "hole punched" : "hole"}
+                  style={{animationDelay: Math.min(i*9,600) + "ms"}} />)}
+        </div>
+        <div className="punch-foot">
+          <span className="bignum">{stats.remaining}</span>
+          <span className="ofnum">of {stats.bought + stats.adj} bought &middot; {stats.used} ridden{stats.iea ? " \u00b7 " + stats.iea + " IEA" : ""}</span>
+        </div>
+        {low && <p className="lowbar">
+          {stats.remaining <= 0 ? "The card is empty. Time to buy more."
+            : "Only " + stats.remaining + " left. Worth buying more soon."}
+        </p>}
+      </section>
+
+      <section className="daily">
+        <p className="eyebrow tan">{daily.kind === "breed" ? "Breed of the day" : "Today's horse fact"}</p>
+        {daily.kind === "breed"
+          ? <div className="breedrow">
+              <Horse breed={daily.item} />
+              <div>
+                <h2 className="breedname">{daily.item.name}</h2>
+                <p className="breedorigin">{daily.item.origin}</p>
+                <p className="breednote">{daily.item.note}</p>
+              </div>
+            </div>
+          : <p className="fact">{daily.item}</p>}
+      </section>
+
+      <section className="strip">
+        <div><span className="strip-k">Paid to date</span><span className="strip-v">{money(stats.paid)}</span></div>
+        <div><span className="strip-k">Per lesson</span><span className="strip-v">{stats.avg === null ? "\u2014" : money(stats.avg)}</span></div>
+        <div><span className="strip-k">Booked ahead</span><span className="strip-v">{stats.booked}</span></div>
+      </section>
+
+      <nav className="tabs">
+        {[["card","Ride log"],["buy","Purchases"],["fix","Adjustments"]].map(t =>
+          <button key={t[0]} className={tab === t[0] ? "tab on" : "tab"} onClick={() => setTab(t[0])}>{t[1]}</button>)}
+      </nav>
+
+      {tab === "card" && <RideLog rides={rides} today={today} onAdd={addRide} onSet={setRide} onDel={delRide} />}
+      {tab === "buy" && <Purchases items={data.purchases} onAdd={addPurchase} onSet={setPurchase} onDel={delPurchase} spend={spend} />}
+      {tab === "fix" && <Adjustments items={data.adjustments} onAdd={addAdj} onDel={delAdj} today={today} />}
+
+      <footer className="foot">
+        <button className="btn ghost" onClick={exportCSV}>Export a backup (CSV)</button>
+        {!confirmWipe
+          ? <button className="btn ghost danger" onClick={() => setConfirmWipe(true)}>Clear everything</button>
+          : <div className="wipe">
+              <span>Delete all lessons and purchases?</span>
+              <button className="btn danger" onClick={() => { setData({riderName:data.riderName,purchases:[],rides:[],adjustments:[]}); setConfirmWipe(false); }}>Yes, clear it</button>
+              <button className="btn ghost" onClick={() => setConfirmWipe(false)}>Keep it</button>
+            </div>}
+        <p className="footnote">Export a copy now and then so there is a file to fall back on.</p>
+      </footer>
+    </div>
+  );
+}
+
+/* ============================================================
+   Ride log
+   ============================================================ */
+function RideLog({ rides, today, onAdd, onSet, onDel }) {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ date: today, time:"", status:"ridden", note:"", iea:false });
+  const [editing, setEditing] = useState(null);
+
+  return (
+    <section>
+      <div className="quick">
+        <button className="btn primary" onClick={() => onAdd({date:today,status:"ridden",note:""})}>Rode today</button>
+        <button className="btn" onClick={() => onAdd({date:today,status:"ridden",note:"",iea:true})}>IEA today</button>
+        <button className="btn" onClick={() => onAdd({date:"",status:"ridden",note:"Date not recorded"})}>Used one, no date</button>
+        <button className="btn" onClick={() => setOpen(o => !o)}>{open ? "Close" : "Add a lesson"}</button>
+      </div>
+
+      {open &&
+        <div className="form">
+          <label>Date
+            <input type="date" value={form.date} onChange={e => setForm(Object.assign({},form,{date:e.target.value}))} />
+            <span className="hint">Leave empty to use a lesson without a date.</span>
+          </label>
+          <label>Time
+            <input type="time" value={form.time} onChange={e => setForm(Object.assign({},form,{time:e.target.value}))} />
+          </label>
+          <label>Status
+            <select value={form.status} onChange={e => setForm(Object.assign({},form,{status:e.target.value}))}>
+              <option value="ridden">Ridden, counts against the card</option>
+              <option value="booked">Booked, counts once the day passes</option>
+              <option value="canceled">Canceled, does not count</option>
+            </select>
+          </label>
+          <label className="wide check">
+            <input type="checkbox" checked={!!form.iea} onChange={e => setForm(Object.assign({},form,{iea:e.target.checked}))} />
+            IEA lesson, does not count against private lessons
+          </label>
+          <label className="wide">Note
+            <input value={form.note} placeholder="Instructor, horse, rescheduled from&hellip;"
+                   onChange={e => setForm(Object.assign({},form,{note:e.target.value}))} />
+          </label>
+          <button className="btn primary wide" onClick={() => {
+            onAdd(Object.assign({}, form));
+            setForm({date:today,time:"",status:"ridden",note:"",iea:false});
+            setOpen(false);
+          }}>Save lesson</button>
+        </div>}
+
+      {rides.length === 0 && <p className="empty">No lessons logged yet. Add the first one above.</p>}
+
+      <ul className="list">
+        {rides.map(r =>
+          <li key={r.id} className={"row " + (r.iea && r.effective !== "canceled" ? "iea" : r.effective)}>
+            <div className="row-main">
+              <div className="row-top">
+                <span className="row-date">
+                  {r.date ? fmtDate(r.date) : "No date recorded"}{r.time ? " \u00b7 " + fmtTime(r.time) : ""}
+                </span>
+                <span style={{display:"flex",gap:6}}>
+                  {r.iea && <span className="pill iea">IEA</span>}
+                  <span className={"pill " + r.effective}>
+                    {r.effective === "ridden" ? "Ridden" : r.effective === "booked" ? "Booked" : "Canceled"}
+                  </span>
+                </span>
+              </div>
+              {r.auto && <p className="autonote">Counted automatically because the day passed. Mark it canceled if she did not ride.</p>}
+              {editing === r.id
+                ? <div className="editrow">
+                    <input type="date" value={r.date} onChange={e => onSet(r.id,{date:e.target.value})} />
+                    <input type="time" value={r.time} onChange={e => onSet(r.id,{time:e.target.value})} />
+                    <input value={r.note} placeholder="Note" onChange={e => onSet(r.id,{note:e.target.value})} />
+                  </div>
+                : r.note && <p className="rownote">{r.note}</p>}
+              <div className="rowacts">
+                {r.effective !== "ridden" && <button className="mini" onClick={() => onSet(r.id,{status:"ridden"})}>Mark ridden</button>}
+                {r.effective !== "booked" && <button className="mini" onClick={() => onSet(r.id,{status:"booked"})}>Mark booked</button>}
+                {r.effective !== "canceled" && <button className="mini" onClick={() => onSet(r.id,{status:"canceled"})}>Mark canceled</button>}
+                <button className="mini" onClick={() => onSet(r.id,{iea:!r.iea})}>{r.iea ? "Make private" : "Make IEA"}</button>
+                <button className="mini" onClick={() => setEditing(editing === r.id ? null : r.id)}>{editing === r.id ? "Done" : "Edit"}</button>
+                <button className="mini warn" onClick={() => onDel(r.id)}>Delete</button>
+              </div>
+            </div>
+          </li>)}
+      </ul>
+    </section>
+  );
+}
+
+/* ============================================================
+   Purchases
+   ============================================================ */
+const blankBuy = (t) => ({date:t,lessons:"",amount:"",perLesson:"",payType:"card",cardName:"",checkNumber:"",note:""});
+
+function Purchases({ items, onAdd, onSet, onDel, spend }) {
+  const today = todayISO();
+  const [open, setOpen] = useState(false);
+  const [f, setF] = useState(blankBuy(today));
+  const [editing, setEditing] = useState(null);
+  const up = (c) => setF(Object.assign({}, f, c));
+
+  const autoPer = f.lessons && f.amount && Number(f.lessons) > 0
+    ? (Number(f.amount)/Number(f.lessons)).toFixed(2) : "";
+  const max = Math.max.apply(null, spend.map(s => s[1]).concat([1]));
+
+  return (
+    <section>
+      <div className="quick">
+        <button className="btn primary" onClick={() => setOpen(o => !o)}>{open ? "Close" : "Record a purchase"}</button>
+      </div>
+
+      {open &&
+        <div className="form">
+          <label>Date purchased<input type="date" value={f.date} onChange={e => up({date:e.target.value})} /></label>
+          <label>Lessons bought<input type="number" inputMode="numeric" value={f.lessons} onChange={e => up({lessons:e.target.value})} /></label>
+          <label>Amount charged<input type="number" inputMode="decimal" step="0.01" placeholder="0.00" value={f.amount} onChange={e => up({amount:e.target.value})} /></label>
+          <label>Per lesson
+            <input type="number" inputMode="decimal" step="0.01" placeholder={autoPer || "0.00"} value={f.perLesson} onChange={e => up({perLesson:e.target.value})} />
+            <span className="hint">Fills in on its own. Override it if a discount applied.</span>
+          </label>
+          <label>Paid with
+            <select value={f.payType} onChange={e => up({payType:e.target.value})}>
+              <option value="card">Credit card</option>
+              <option value="check">Check</option>
+              <option value="other">Cash or other</option>
+              <option value="unknown">Not recorded</option>
+            </select>
+          </label>
+          {f.payType === "card" && <label>Card<input value={f.cardName} placeholder="Name on the card, or which card" onChange={e => up({cardName:e.target.value})} /></label>}
+          {f.payType === "check" && <label>Check number<input value={f.checkNumber} inputMode="numeric" onChange={e => up({checkNumber:e.target.value})} /></label>}
+          <label className="wide">Note<input value={f.note} placeholder="Package name, discount, promotion" onChange={e => up({note:e.target.value})} /></label>
+          <button className="btn primary wide" onClick={() => {
+            if (!f.lessons) return;
+            onAdd(Object.assign({}, f, {perLesson: f.perLesson || autoPer}));
+            setF(blankBuy(today)); setOpen(false);
+          }}>Save purchase</button>
+        </div>}
+
+      {spend.length > 0 &&
+        <div className="chart">
+          <p className="eyebrow tan">Spending by month</p>
+          <div className="bars">
+            {spend.map(s => {
+              const p = s[0].split("-");
+              return (
+                <div className="bar" key={s[0]}>
+                  <span className="barval">{money(s[1])}</span>
+                  <div className="barfill" style={{height: Math.max((s[1]/max)*90,6) + "px"}} />
+                  <span className="barlab">{new Date(Number(p[0]),Number(p[1])-1,1).toLocaleDateString("en-US",{month:"short"})}</span>
+                </div>);
+            })}
+          </div>
+        </div>}
+
+      {items.length === 0 && <p className="empty">No purchases recorded yet.</p>}
+
+      <ul className="list">
+        {items.map(p =>
+          <li key={p.id} className="row buy">
+            <div className="row-main">
+              <div className="row-top">
+                <span className="row-date">{fmtDate(p.date)}</span>
+                <span className="lessons-tag">+{p.lessons}</span>
+              </div>
+              <p className="buyline">{money(p.amount)}{p.perLesson ? " \u00b7 " + money(p.perLesson) + " each" : ""}</p>
+              <p className="rownote">
+                {p.payType === "card" ? "Card: " + (p.cardName || "not noted")
+                  : p.payType === "check" ? "Check " + (p.checkNumber || "number not noted")
+                  : p.payType === "other" ? "Cash or other" : "Payment not recorded"}
+                {p.note ? " \u00b7 " + p.note : ""}
+              </p>
+
+              {editing === p.id &&
+                <div className="form inline">
+                  <label>Date<input type="date" value={p.date} onChange={e => onSet(p.id,{date:e.target.value})} /></label>
+                  <label>Lessons<input type="number" value={p.lessons} onChange={e => onSet(p.id,{lessons:e.target.value})} /></label>
+                  <label>Amount
+                    <input type="number" step="0.01" value={p.amount} onChange={e => {
+                      const amount = e.target.value;
+                      const per = amount && Number(p.lessons) > 0 ? (Number(amount)/Number(p.lessons)).toFixed(2) : p.perLesson;
+                      onSet(p.id,{amount, perLesson: per});
+                    }} />
+                  </label>
+                  <label>Per lesson<input type="number" step="0.01" value={p.perLesson} onChange={e => onSet(p.id,{perLesson:e.target.value})} /></label>
+                  <label>Paid with
+                    <select value={p.payType} onChange={e => onSet(p.id,{payType:e.target.value})}>
+                      <option value="card">Credit card</option>
+                      <option value="check">Check</option>
+                      <option value="other">Cash or other</option>
+                      <option value="unknown">Not recorded</option>
+                    </select>
+                  </label>
+                  {p.payType === "card" && <label>Card<input value={p.cardName} onChange={e => onSet(p.id,{cardName:e.target.value})} /></label>}
+                  {p.payType === "check" && <label>Check number<input value={p.checkNumber} onChange={e => onSet(p.id,{checkNumber:e.target.value})} /></label>}
+                  <label className="wide">Note<input value={p.note} onChange={e => onSet(p.id,{note:e.target.value})} /></label>
+                </div>}
+
+              <div className="rowacts">
+                <button className="mini" onClick={() => setEditing(editing === p.id ? null : p.id)}>{editing === p.id ? "Done" : "Edit"}</button>
+                <button className="mini warn" onClick={() => onDel(p.id)}>Delete</button>
+              </div>
+            </div>
+          </li>)}
+      </ul>
+    </section>
+  );
+}
+
+/* ============================================================
+   Adjustments
+   ============================================================ */
+function Adjustments({ items, onAdd, onDel, today }) {
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+
+  return (
+    <section>
+      <p className="explain">
+        Use this when the barn's count and this app disagree. A positive number adds lessons to the card,
+        a negative number takes them away.
+      </p>
+      <div className="form">
+        <label>Lessons<input type="number" inputMode="numeric" placeholder="-1 or 2" value={amount} onChange={e => setAmount(e.target.value)} /></label>
+        <label className="wide">Why<input value={note} placeholder="Barn credited a late cancel" onChange={e => setNote(e.target.value)} /></label>
+        <button className="btn primary wide" onClick={() => {
+          if (!amount) return;
+          onAdd({date:today, amount:Number(amount), note});
+          setAmount(""); setNote("");
+        }}>Save adjustment</button>
+      </div>
+
+      {items.length === 0 && <p className="empty">No adjustments. The count is clean.</p>}
+
+      <ul className="list">
+        {items.map(a =>
+          <li key={a.id} className="row buy">
+            <div className="row-main">
+              <div className="row-top">
+                <span className="row-date">{fmtDate(a.date)}</span>
+                <span className={a.amount < 0 ? "lessons-tag neg" : "lessons-tag"}>{a.amount > 0 ? "+" + a.amount : a.amount}</span>
+              </div>
+              {a.note && <p className="rownote">{a.note}</p>}
+              <div className="rowacts"><button className="mini warn" onClick={() => onDel(a.id)}>Delete</button></div>
+            </div>
+          </li>)}
+      </ul>
+    </section>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
